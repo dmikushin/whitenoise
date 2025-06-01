@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whitenoise"
+version = "1.0.0"
+description = "A Python-based therapeutic white noise generator for sleep, concentration, and tinnitus relief"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Dmitry Mikushin", email = "dmitry@kernelgen.org"}
+]
+maintainers = [
+    {name = "Dmitry Mikushin", email = "dmitry@kernelgen.org"}
+]
+keywords = [
+    "white-noise", 
+    "audio", 
+    "therapy", 
+    "sleep", 
+    "concentration", 
+    "tinnitus", 
+    "wellness", 
+    "sound-therapy"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Healthcare Industry",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Sound Synthesis",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Utilities"
+]
+requires-python = ">=3.6"
+dependencies = [
+    "numpy>=1.16.0",
+    "sounddevice>=0.4.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/dmikushin/whitenoise"
+Repository = "https://github.com/dmikushin/whitenoise"
+Documentation = "https://github.com/dmikushin/whitenoise#readme"
+"Bug Reports" = "https://github.com/dmikushin/whitenoise/issues"
+
+[project.scripts]
+whitenoise = "whitenoise:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black",
+    "flake8",
+    "isort"
+]
+
+[tool.setuptools]
+packages = ["whitenoise"]
+package-dir = {"" = "."}
+
+[tool.setuptools.package-data]
+whitenoise = ["*.py"]
+
+[tool.black]
+line-length = 88
+target-version = ['py36']
+
+[tool.isort]
+profile = "black"
+line_length = 88

@@ -60,13 +60,13 @@ The white noise generator includes a comprehensive CLI with preset modes and ful
 python whitenoise.py
 
 # Sleep mode - gentle, low amplitude for nighttime use
-python whitenoise.py --preset sleep
+whitenoise --preset sleep
 
 # Concentration mode - moderate settings for work/study
-python whitenoise.py --preset concentration
+whitenoise --preset concentration
 
 # Tinnitus relief mode - higher amplitude for masking
-python whitenoise.py --preset tinnitus
+whitenoise --preset tinnitus
 ```
 
 Stop with Ctrl+C (Cmd+C on Mac).
@@ -75,16 +75,16 @@ Stop with Ctrl+C (Cmd+C on Mac).
 
 ```bash
 # Custom amplitude with a preset
-python whitenoise.py --preset sleep --amplitude 0.03
+whitenoise --preset sleep --amplitude 0.03
 
 # Fully custom settings
-python whitenoise.py --sample-rate 48000 --block-size 2048 --amplitude 0.15
+whitenoise --sample-rate 48000 --block-size 2048 --amplitude 0.15
 
 # High-performance settings (lower latency)
-python whitenoise.py -s 44100 -b 512 -a 0.08
+whitenoise -s 44100 -b 512 -a 0.08
 
 # Quiet mode (minimal output)
-python whitenoise.py --preset concentration --quiet
+whitenoise --preset concentration --quiet
 ```
 
 #### ⚙️ Settings Guidelines
@@ -109,13 +109,13 @@ Amplitude:
 
 ```bash
 # List all available presets
-python whitenoise.py --list-presets
+whitenoise --list-presets
 
 # List available audio devices
-python whitenoise.py --list-devices
+whitenoise --list-devices
 
 # Show help and all options
-python whitenoise.py --help
+whitenoise --help
 ```
 
 #### CLI Options Reference
