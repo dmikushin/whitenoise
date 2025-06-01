@@ -49,7 +49,97 @@ White noise has been scientifically proven to offer numerous therapeutic benefit
 
 ## 🎵 Usage
 
-### Quick Start (Simple Function)
+### Command Line Interface
+
+The white noise generator includes a comprehensive CLI with preset modes and full customization options.
+
+#### Quick Start with Presets
+
+```bash
+# Use default settings
+python whitenoise.py
+
+# Sleep mode - gentle, low amplitude for nighttime use
+python whitenoise.py --preset sleep
+
+# Concentration mode - moderate settings for work/study
+python whitenoise.py --preset concentration
+
+# Tinnitus relief mode - higher amplitude for masking
+python whitenoise.py --preset tinnitus
+```
+
+Stop with Ctrl+C (Cmd+C on Mac).
+
+#### Custom Settings
+
+```bash
+# Custom amplitude with a preset
+python whitenoise.py --preset sleep --amplitude 0.03
+
+# Fully custom settings
+python whitenoise.py --sample-rate 48000 --block-size 2048 --amplitude 0.15
+
+# High-performance settings (lower latency)
+python whitenoise.py -s 44100 -b 512 -a 0.08
+
+# Quiet mode (minimal output)
+python whitenoise.py --preset concentration --quiet
+```
+
+#### ⚙️ Settings Guidelines
+
+Sample Rate:
+- **44100 Hz** (default): CD quality, recommended for most uses
+- **48000 Hz**: Professional audio standard
+- **22050 Hz**: Lower quality, reduced CPU usage
+
+Block Size:
+- **1024** (default): Good balance of latency and performance
+- **512**: Lower latency, higher CPU usage
+- **2048**: Higher latency, lower CPU usage
+
+Amplitude:
+- **0.1** (default): Safe starting volume
+- **Range**: 0.0 (silent) to 1.0 (maximum)
+- **Recommendation**: Start low and gradually increase
+
+
+#### Information Commands
+
+```bash
+# List all available presets
+python whitenoise.py --list-presets
+
+# List available audio devices
+python whitenoise.py --list-devices
+
+# Show help and all options
+python whitenoise.py --help
+```
+
+#### CLI Options Reference
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--preset` | `-p` | Select preset mode (sleep, concentration, tinnitus, default) | default |
+| `--sample-rate` | `-s` | Sample rate: 22050, 44100, or 48000 Hz | Preset dependent |
+| `--block-size` | `-b` | Block size: 256, 512, 1024, 2048, or 4096 frames | Preset dependent |
+| `--amplitude` | `-a` | Amplitude: 0.0 to 1.0 | Preset dependent |
+| `--quiet` | `-q` | Minimize output messages | False |
+| `--list-presets` | | Show all presets and exit | |
+| `--list-devices` | | Show audio devices and exit | |
+
+### Preset Modes
+
+| Preset | Amplitude | Use Case | Description |
+|--------|-----------|----------|-------------|
+| **sleep** | 0.05 | Nighttime rest | Gentle, soothing white noise for sleep |
+| **concentration** | 0.08 | Work/Study | Moderate masking for focus and productivity |
+| **tinnitus** | 0.12 | Tinnitus relief | Higher amplitude for symptom masking |
+| **default** | 0.10 | General use | Balanced settings for everyday use |
+
+### Programmatic Usage (Advanced)
 
 ```python
 from whitenoise import infinite_white_noise
@@ -79,32 +169,6 @@ generator.set_amplitude(0.15)
 # Stop when needed
 generator.stop()
 ```
-
-### Command Line Usage
-
-```bash
-# Run with default settings
-python whitenoise.py
-
-# Stop with Ctrl+C (Cmd+C on Mac)
-```
-
-## ⚙️ Configuration Options
-
-### Sample Rate
-- **44100 Hz** (default): CD quality, recommended for most uses
-- **48000 Hz**: Professional audio standard
-- **22050 Hz**: Lower quality, reduced CPU usage
-
-### Block Size
-- **1024** (default): Good balance of latency and performance
-- **512**: Lower latency, higher CPU usage
-- **2048**: Higher latency, lower CPU usage
-
-### Amplitude
-- **0.1** (default): Safe starting volume
-- **Range**: 0.0 (silent) to 1.0 (maximum)
-- **Recommendation**: Start low and gradually increase
 
 ## 🛡️ Safety Guidelines
 
@@ -155,32 +219,6 @@ python whitenoise.py
 
 ### Algorithm
 The generator uses NumPy's `random.uniform()` function to create noise with uniform distribution between -1 and 1, which is then scaled by the amplitude parameter and output to both stereo channels.
-
-## 📚 Recommended Usage Patterns
-
-### For Sleep
-```python
-# Gentle settings for nighttime use
-generator = StereoWhiteNoiseGenerator(amplitude=0.05)
-generator.start()
-# Let it run all night, stop in the morning
-```
-
-### For Concentration
-```python
-# Moderate settings for work/study
-generator = StereoWhiteNoiseGenerator(amplitude=0.08)
-generator.start()
-# Use during work sessions, take breaks every hour
-```
-
-### For Tinnitus Relief
-```python
-# Customizable settings - adjust to mask tinnitus frequency
-generator = StereoWhiteNoiseGenerator(amplitude=0.12)
-generator.start()
-# Consult with audiologist for optimal settings
-```
 
 ## ⚕️ Disclaimer
 

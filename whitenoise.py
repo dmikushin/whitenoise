@@ -1,6 +1,158 @@
 import sounddevice as sd
 import numpy as np
 import time
+import argparse
+import sys
+
+# Preset configurations for common use cases
+PRESETS = {
+    'sleep': {
+        'description': 'Gentle settings optimized for sleep and relaxation',
+        'sample_rate': 44100,
+        'block_size': 1024,
+        'amplitude': 0.05
+    },
+    'concentration': {
+        'description': 'Moderate settings ideal for work and study',
+        'sample_rate': 44100,
+        'block_size': 1024,
+        'amplitude': 0.08
+    },
+    'tinnitus': {
+        'description': 'Higher amplitude settings for tinnitus masking',
+        'sample_rate': 44100,
+        'block_size': 1024,
+        'amplitude': 0.12
+    },
+    'default': {
+        'description': 'Balanced settings suitable for general use',
+        'sample_rate': 44100,
+        'block_size': 1024,
+        'amplitude': 0.1
+    }
+}
+
+def parse_arguments():
+    """Parse command line arguments for the white noise generator."""
+    parser = argparse.ArgumentParser(
+        description='Stereo White Noise Generator - Therapeutic audio for sleep, concentration, and tinnitus relief',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Preset Modes:
+  sleep         Gentle settings for sleep and relaxation (amplitude: 0.05)
+  concentration Moderate settings for work and study (amplitude: 0.08)
+  tinnitus      Higher amplitude for tinnitus masking (amplitude: 0.12)
+  default       Balanced settings for general use (amplitude: 0.1)
+
+Examples:
+  %(prog)s                          # Use default preset
+  %(prog)s --preset sleep           # Use sleep preset
+  %(prog)s --amplitude 0.15         # Custom amplitude with default preset
+  %(prog)s --preset tinnitus -a 0.2 # Tinnitus preset with custom amplitude
+  %(prog)s -s 48000 -b 2048 -a 0.06 # Fully custom settings
+
+Safety Note:
+  Always start with low amplitudes and protect your hearing.
+  Recommended maximum amplitude is 0.2 for extended use.
+        '''
+    )
+    
+    # Preset selection
+    parser.add_argument(
+        '--preset', '-p',
+        choices=list(PRESETS.keys()),
+        default='default',
+        help='Select a preset mode (default: %(default)s)'
+    )
+    
+    # Audio configuration options
+    parser.add_argument(
+        '--sample-rate', '-s',
+        type=int,
+        choices=[22050, 44100, 48000],
+        help='Audio sample rate in Hz (default: preset dependent)'
+    )
+    
+    parser.add_argument(
+        '--block-size', '-b',
+        type=int,
+        choices=[256, 512, 1024, 2048, 4096],
+        help='Audio block size in frames (default: preset dependent). '
+             'Lower values = lower latency, higher CPU usage'
+    )
+    
+    parser.add_argument(
+        '--amplitude', '-a',
+        type=float,
+        metavar='0.0-1.0',
+        help='Noise amplitude (0.0 = silent, 1.0 = maximum). '
+             'Default: preset dependent. Start low for safety!'
+    )
+    
+    # Information options
+    parser.add_argument(
+        '--list-presets',
+        action='store_true',
+        help='List all available presets and their settings'
+    )
+    
+    parser.add_argument(
+        '--list-devices',
+        action='store_true',
+        help='List available audio devices'
+    )
+    
+    parser.add_argument(
+        '--quiet', '-q',
+        action='store_true',
+        help='Minimize output messages'
+    )
+    
+    return parser.parse_args()
+
+def validate_amplitude(amplitude):
+    """Validate and clamp amplitude to safe range."""
+    if amplitude < 0.0:
+        print("Warning: Amplitude cannot be negative. Setting to 0.0")
+        return 0.0
+    elif amplitude > 1.0:
+        print("Warning: Amplitude cannot exceed 1.0. Setting to 1.0")
+        return 1.0
+    elif amplitude > 0.5:
+        print(f"Warning: High amplitude ({amplitude}) detected. Please protect your hearing!")
+    return amplitude
+
+def list_presets():
+    """Display all available presets and their configurations."""
+    print("Available Presets:")
+    print("=" * 60)
+    for name, config in PRESETS.items():
+        print(f"\n{name.upper()}:")
+        print(f"  Description: {config['description']}")
+        print(f"  Sample Rate: {config['sample_rate']} Hz")
+        print(f"  Block Size:  {config['block_size']} frames")
+        print(f"  Amplitude:   {config['amplitude']}")
+
+def list_audio_devices():
+    """Display available audio devices."""
+    try:
+        print("Available Audio Devices:")
+        print("=" * 40)
+        devices = sd.query_devices()
+        for i, device in enumerate(devices):
+            device_type = []
+            if device['max_inputs'] > 0:
+                device_type.append('input')
+            if device['max_outputs'] > 0:
+                device_type.append('output')
+            
+            print(f"{i:2d}: {device['name']}")
+            print(f"     Type: {', '.join(device_type)}")
+            print(f"     Channels: {device['max_outputs']} out, {device['max_inputs']} in")
+            print(f"     Sample Rate: {device['default_samplerate']} Hz")
+            print()
+    except Exception as e:
+        print(f"Error listing audio devices: {e}")
 
 class StereoWhiteNoiseGenerator:
     def __init__(self, sample_rate=44100, block_size=1024, amplitude=0.1):
@@ -79,25 +231,67 @@ class StereoWhiteNoiseGenerator:
         print(f"Amplitude set to: {self.amplitude}")
 
 def main():
-    """Main function to run the white noise generator infinitely."""
-    # Create generator with default settings
-    # You can adjust these parameters:
+    """Main function to run the white noise generator with CLI support."""
+    args = parse_arguments()
+    
+    # Handle information requests
+    if args.list_presets:
+        list_presets()
+        return
+    
+    if args.list_devices:
+        list_audio_devices()
+        return
+    
+    # Get base configuration from selected preset
+    config = PRESETS[args.preset].copy()
+    
+    # Override with any custom arguments provided
+    if args.sample_rate is not None:
+        config['sample_rate'] = args.sample_rate
+    
+    if args.block_size is not None:
+        config['block_size'] = args.block_size
+    
+    if args.amplitude is not None:
+        config['amplitude'] = validate_amplitude(args.amplitude)
+    else:
+        config['amplitude'] = validate_amplitude(config['amplitude'])
+    
+    # Display configuration if not in quiet mode
+    if not args.quiet:
+        print(f"White Noise Generator - {args.preset.upper()} mode")
+        print("=" * 50)
+        print(f"Preset: {args.preset} - {PRESETS[args.preset]['description']}")
+        print(f"Sample Rate: {config['sample_rate']} Hz")
+        print(f"Block Size: {config['block_size']} frames")
+        print(f"Amplitude: {config['amplitude']}")
+        print("=" * 50)
+    
+    # Create generator with configured settings
     generator = StereoWhiteNoiseGenerator(
-        sample_rate=44100,   # Standard CD quality
-        block_size=1024,     # Good balance of latency and performance
-        amplitude=0.1        # Start with low volume for safety
+        sample_rate=config['sample_rate'],
+        block_size=config['block_size'],
+        amplitude=config['amplitude']
     )
     
     try:
         generator.start()
         
+        if not args.quiet:
+            print("White noise is playing infinitely. Press Ctrl+C to stop.")
+            print("Safety reminder: Take breaks and protect your hearing!")
+        
         # Keep the program running infinitely until user interruption
-        print("White noise is playing infinitely. Press Ctrl+C to stop.")
         while True:
-            time.sleep(1)  # Sleep longer since we're running infinitely
+            time.sleep(1)
             
     except KeyboardInterrupt:
-        print("\nUser interrupted. Stopping white noise...")
+        if not args.quiet:
+            print("\nUser interrupted. Stopping white noise...")
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
     finally:
         generator.stop()
 
